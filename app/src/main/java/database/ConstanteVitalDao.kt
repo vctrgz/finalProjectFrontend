@@ -1,6 +1,7 @@
 package com.example.healhub.database
 
 import androidx.room.*
+import com.example.healhub.database.ConstanteVital
 
 @Dao
 interface ConstanteVitalDao {

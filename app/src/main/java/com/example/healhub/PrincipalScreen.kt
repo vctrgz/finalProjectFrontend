@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.healhub.database.RoomEntity
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrincipalScreen(
     rooms: List<RoomEntity>,
@@ -42,6 +43,10 @@ fun PrincipalScreen(
                         Text(text = "Room ${room.name}", fontSize = 18.sp, color = Color.Black)
                         Text(text = "Patient: ${room.patientName}", color = Color.DarkGray)
                         Text(text = "Diagnosis: ${room.diagnosis}", color = Color.DarkGray)
+                        Text(
+                            text = "Observations: ${room.observaciones ?: "None"}",
+                            color = Color.Gray
+                        )
                     }
                 }
             }

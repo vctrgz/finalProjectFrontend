@@ -12,18 +12,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+//import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.healhub.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import com.example.healhub.database.Usuario
+import kotlinx.coroutines.withContext
 
 @Composable
 fun LoginScreen(onLoginSuccess: () -> Unit) {
     val context = LocalContext.current
     val db = remember { AppDatabase.getInstance(context) }
     val dao = db.usuarioDao()
+
+    // 预插入默认账号：admin / admin123
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            val existingUser = dao.login("admin", "admin123")
+            if (existingUser == null) {
+                dao.insertAll(Usuario(id = 1, nombre = "admin", password = "admin123"))
+            }
+        }
+    }
 
     var userId by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -43,9 +55,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             verticalArrangement = Arrangement.Center
         ) {
             Text("HealHub", fontSize = 32.sp, color = Color(0xFF4CB8B3))
-
             Spacer(modifier = Modifier.height(40.dp))
-
             OutlinedTextField(
                 value = userId,
                 onValueChange = { userId = it },
@@ -53,9 +63,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
-
             Spacer(modifier = Modifier.height(16.dp))
-
             OutlinedTextField(
                 value = password,
                 onValueChange = { password = it },
@@ -70,9 +78,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                 },
                 modifier = Modifier.fillMaxWidth()
             )
-
             Spacer(modifier = Modifier.height(20.dp))
-
             Button(
                 onClick = {
                     scope.launch(Dispatchers.IO) {
@@ -81,7 +87,7 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                             error = null
                             onLoginSuccess()
                         } else {
-                            error = "❌ Invalid credentials"
+                            error = "Invalid credentials"
                         }
                     }
                 },
@@ -93,7 +99,6 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
             ) {
                 Text("Login")
             }
-
             error?.let {
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(it, color = Color.Red, fontSize = 14.sp)
@@ -101,3 +106,4 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
         }
     }
 }
+

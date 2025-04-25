@@ -119,11 +119,18 @@ fun AddCareDialog(
                 Spacer(modifier = Modifier.height(8.dp))
 
                 OutlinedTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    label = { Text("Notes") },
+                    value = bloodPressure,
+                    onValueChange = {
+                        bloodPressure = it.filter { c -> c.isDigit() || c == '/' }
+                        if (bloodPressure.length == 3 && !bloodPressure.contains("/")) {
+                            bloodPressure = bloodPressure + "/"
+                        }
+                    },
+                    label = { Text("Blood Pressure (e.g., 120/80)") },
                     modifier = Modifier.fillMaxWidth()
                 )
+
+
 
                 if (showError) {
                     Spacer(modifier = Modifier.height(10.dp))
