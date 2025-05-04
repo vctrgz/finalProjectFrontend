@@ -1,4 +1,4 @@
-package com.example.healhub
+/*package com.example.healhub
 
 import android.content.Context
 import androidx.compose.foundation.layout.*
@@ -42,10 +42,15 @@ fun CareDataView(context: Context, roomId: Int) {
                     Text("Date: ${it.date}")
                     Text("Type: ${it.type}")
                     Text("Blood Pressure: ${it.bloodPressure}")
+                    it.respiratoryRate?.let { v -> Text("Respiratory Rate: $v") }
+                    it.pulse?.let { v -> Text("Pulse: $v") }
+                    it.temperature?.let { v -> Text("Temperature: $v ºC") }
+                    it.oxygenSaturation?.let { v -> Text("Oxygen Saturation: $v%") }
                     Text("Note: ${it.note}")
                 }
             }
         }
+
         Spacer(modifier = Modifier.height(12.dp))
         FloatingActionButton(onClick = { showDialog = true }) {
             Icon(Icons.Default.Add, contentDescription = "Add")
@@ -53,7 +58,7 @@ fun CareDataView(context: Context, roomId: Int) {
         if (showDialog) {
             AddCareDialog(
                 onDismiss = { showDialog = false },
-                onSave = { date, type, bp, note ->
+                onSave = { date, type, bp, resp, pulse, temp, oxy, note ->
                     showDialog = false
                     CoroutineScope(Dispatchers.IO).launch {
                         dao.insert(
@@ -62,6 +67,10 @@ fun CareDataView(context: Context, roomId: Int) {
                                 date = date,
                                 type = type,
                                 bloodPressure = bp,
+                                respiratoryRate = resp?.toIntOrNull(),
+                                pulse = pulse?.toIntOrNull(),
+                                temperature = temp?.toFloatOrNull(),
+                                oxygenSaturation = oxy?.toIntOrNull(),
                                 note = note
                             )
                         )
@@ -69,7 +78,9 @@ fun CareDataView(context: Context, roomId: Int) {
                     }
                 }
             )
+
         }
     }
 }
 
+*/

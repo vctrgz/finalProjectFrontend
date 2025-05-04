@@ -10,10 +10,18 @@ data class CareRecord(
     val date: String,
     val type: String,
     val bloodPressure: String,
-    val note: String
+    val respiratoryRate: Int?,
+    val pulse: Int?,
+    val temperature: Float?,
+    val oxygenSaturation: Int?,
+    val note: String,
+    val dietTexture: String? = null,
+    val dietType: String? = null,
+    val hygiene: String? = null,
+    val sedestation: String? = null,
+    val walking: String? = null,
+    val posture: String? = null,
+    val drainage: String? = null,
+    val shiftNote: String? = null
+
 )
-
-
-
-
-
