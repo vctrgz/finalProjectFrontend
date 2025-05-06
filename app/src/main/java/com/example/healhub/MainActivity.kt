@@ -6,7 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
 import com.example.healhub.database.AppDatabase
 import com.example.healhub.database.RoomEntity
+import com.example.healhub.ui.MedicalDataScreen
 import com.example.healhub.ui.PatientInfoScreen
+import com.example.healhub.ui.PatientMenuScreen
+import com.example.healhub.ui.PersonalDataScreen
 import com.example.healhub.ui.theme.HealHubTheme
 
 class MainActivity : ComponentActivity() {
@@ -29,9 +32,33 @@ class MainActivity : ComponentActivity() {
                         onLogout = { screen = "login" },
                         onRoomClick = {
                             selectedRoom = it
-                            screen = "patient"
+                            screen = "patient_menu"
                         }
+
                     )
+                    "patient_menu" -> selectedRoom?.let { room ->
+                        PatientMenuScreen(
+                            roomId = room.id,
+                            onBack = { screen = "rooms" },
+                            onNavigateToPersonal = { screen = "personal_data" },
+                            onNavigateToMedical = { screen = "medical_data" },
+                            onNavigateToCare = { screen = "patient" }
+                        )
+                    }
+                    "medical_data" -> selectedRoom?.let { room ->
+                        MedicalDataScreen(
+                            roomId = room.id,
+                            onBack = { screen = "patient_menu" }
+                        )
+                    }
+                    "personal_data" -> selectedRoom?.let { room ->
+                        PersonalDataScreen(
+                            roomId = room.id,
+                            onBack = { screen = "patient_menu" }
+                        )
+                    }
+
+
                     "patient" -> selectedRoom?.let { room ->
                         PatientInfoScreen(
                             roomId = room.id,

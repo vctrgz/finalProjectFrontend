@@ -14,6 +14,7 @@ import com.example.healhub.AddCareDialog
 import com.example.healhub.database.AppDatabase
 import com.example.healhub.database.CareRecord
 import com.example.healhub.database.RoomEntity
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -29,7 +30,7 @@ fun PatientInfoScreen(roomId: Int, onBack: () -> Unit) {
     var room by remember { mutableStateOf<RoomEntity?>(null) }
     var showDialog by remember { mutableStateOf(false) }
 
-    // 查询房间详情和护理记录
+    // search for room and care records when roomId changes
     LaunchedEffect(roomId) {
         withContext(Dispatchers.IO) {
             room = roomDao.getRoomById(roomId)
@@ -37,7 +38,6 @@ fun PatientInfoScreen(roomId: Int, onBack: () -> Unit) {
         }
     }
 
-    // 整体滚动列（根据数据需要你可以用 LazyColumn 等）
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(16.dp)) {
@@ -54,7 +54,7 @@ fun PatientInfoScreen(roomId: Int, onBack: () -> Unit) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 显示房间信息
+        // show info
         if (room != null) {
             Text("Room: ${room!!.name}", style = MaterialTheme.typography.titleMedium)
             Text("Patient: ${room!!.patientName}", style = MaterialTheme.typography.bodyLarge)
@@ -62,7 +62,7 @@ fun PatientInfoScreen(roomId: Int, onBack: () -> Unit) {
             Text("Observations: ${room!!.observaciones ?: "None"}", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
             Spacer(modifier = Modifier.height(12.dp))
         } else {
-            // 如果未加载到房间信息，显示占位提示
+            // if room is null, show loading message
             Text("Loading room info...", style = MaterialTheme.typography.bodyLarge)
             Spacer(modifier = Modifier.height(12.dp))
         }
@@ -72,18 +72,77 @@ fun PatientInfoScreen(roomId: Int, onBack: () -> Unit) {
         Spacer(modifier = Modifier.height(8.dp))
         Text("Care Records", style = MaterialTheme.typography.titleMedium)
 
-        // 显示护理记录
+
         if (careRecords.isNotEmpty()) {
             careRecords.forEach { record ->
                 Card(modifier = Modifier.padding(8.dp)) {
                     Column(modifier = Modifier.padding(12.dp)) {
                         Text("Date: ${record.date}")
                         Text("Type: ${record.type}")
-                        Text("Blood Pressure: ${record.bloodPressure}")
+
+                        val bpParts = record.bloodPressure.split("/")
+                        val systolic = bpParts.getOrNull(0)?.toIntOrNull()
+                        val diastolic = bpParts.getOrNull(1)?.toIntOrNull()
+                        val bpColor = if (
+                            (systolic != null && (systolic > 140 || systolic < 90)) ||
+                            (diastolic != null && (diastolic >= 90 || diastolic < 50))
+                        ) Color.Red else Color.Unspecified
+
+                        Text("Blood Pressure: ${record.bloodPressure}", color = bpColor)
+
+
+                        record.respiratoryRate?.let {
+                            val color = if (it < 12 || it > 20) Color.Red else Color.Unspecified
+                            Text("Respiratory Rate: $it", color = color)
+                        }
+
+
+                        record.pulse?.let {
+                            val color = if (it < 50 || it > 100) Color.Red else Color.Unspecified
+                            Text("Pulse: $it", color = color)
+                        }
+
+
+                        record.temperature?.let {
+                            val color = if (it < 34.9f || it > 38.5f) Color.Red else Color.Unspecified
+                            Text("Temperature: $it ºC", color = color)
+                        }
+
+
+                        record.oxygenSaturation?.let {
+                            val color = if (it < 94) Color.Red else Color.Unspecified
+                            Text("Oxygen Saturation: $it%", color = color)
+                        }
+                        record.dietTexture?.let {
+                            Text("Diet Texture: $it")
+                        }
+                        record.dietType?.let {
+                            Text("Diet Type: $it")
+                        }
+                        record.hygiene?.let {
+                            Text("Hygiene: $it")
+                        }
+                        record.sedestation?.let {
+                            Text("Sedestation: $it")
+                        }
+                        record.walking?.let {
+                            Text("Walking: $it")
+                        }
+                        record.posture?.let {
+                            Text("Posture: $it")
+                        }
+                        record.drainage?.let {
+                            Text("Drainage: $it")
+                        }
+                        record.shiftNote?.let {
+                            Text("Shift Observations: $it")
+                        }
+
                         Text("Note: ${record.note}")
                     }
                 }
             }
+
         } else {
             Text("No care records found.", color = Color.Gray)
         }
@@ -96,24 +155,35 @@ fun PatientInfoScreen(roomId: Int, onBack: () -> Unit) {
         if (showDialog) {
             AddCareDialog(
                 onDismiss = { showDialog = false },
-                onSave = { date, type, bp, note ->
+                onSave = { date, type, bp, resp, pulse, temp, oxy, dietTexture, dietType,hygiene, sedestation, walking, posture, drainage, shiftNote, note ->
                     showDialog = false
-                    // 新增记录操作在 IO 线程中执行
-                    kotlinx.coroutines.CoroutineScope(Dispatchers.IO).launch {
+                    CoroutineScope(Dispatchers.IO).launch {
                         careDao.insert(
                             CareRecord(
                                 roomId = roomId,
                                 date = date,
                                 type = type,
                                 bloodPressure = bp,
+                                respiratoryRate = resp?.toIntOrNull(),
+                                pulse = pulse?.toIntOrNull(),
+                                temperature = temp?.toFloatOrNull(),
+                                oxygenSaturation = oxy?.toIntOrNull(),
+                                dietTexture = dietTexture,
+                                dietType = dietType,
+                                hygiene = hygiene,
+                                sedestation = sedestation,
+                                walking = walking,
+                                posture = posture,
+                                drainage = drainage,
+                                shiftNote = shiftNote,
                                 note = note
                             )
                         )
-                        // 更新护理记录数据
                         careRecords = careDao.getByRoomId(roomId)
                     }
                 }
             )
+
         }
     }
 }

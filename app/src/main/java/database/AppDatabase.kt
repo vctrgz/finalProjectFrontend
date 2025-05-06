@@ -21,6 +21,11 @@ import com.example.healhub.database.AuxiliarDao
 import com.example.healhub.database.CareRecord
 import com.example.healhub.database.CareRecordDao
 import com.example.healhub.database.Usuario
+import com.example.healhub.database.UsuarioDao
+import com.example.healhub.database.MedicalData
+import com.example.healhub.database.MedicalDataDao
+import com.example.healhub.database.PatientData
+import com.example.healhub.database.PatientDataDao
 
 @Database(
     entities = [
@@ -32,9 +37,11 @@ import com.example.healhub.database.Usuario
         Cuidado::class,
         CuidadoRegistrado::class,
         ConstanteVital::class,
-        Auxiliar::class
+        Auxiliar::class,
+        MedicalData::class,
+        PatientData::class
     ],
-    version = 1
+    version = 3
 )
 
 abstract class AppDatabase : RoomDatabase() {
@@ -47,6 +54,9 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun careRecordDao(): CareRecordDao
     abstract fun usuarioDao(): UsuarioDao
     abstract fun roomDao(): RoomDao
+    abstract fun medicalDataDao(): MedicalDataDao
+    abstract fun patientDataDao(): PatientDataDao
+
 
 
     companion object {
