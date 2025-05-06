@@ -14,12 +14,11 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(onFinished: () -> Unit) {
-    LaunchedEffect(true) {
-        delay(2000)
-        onFinished()
+fun SplashScreen(viewModel: AppViewModel) {
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(2000L) // Espera 2 segundos
+        viewModel.navigateTo("login")  // Navega automáticamente
     }
-
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,

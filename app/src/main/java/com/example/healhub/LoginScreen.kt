@@ -10,38 +10,36 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-//import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.healhub.database.AppDatabase
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import com.example.healhub.database.Usuario
-import kotlinx.coroutines.withContext
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.healhub.ui.remote.RemoteLoginUiState
 
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
+fun LoginScreen(viewModel: AppViewModel) {
     val context = LocalContext.current
-    val db = remember { AppDatabase.getInstance(context) }
-    val dao = db.usuarioDao()
+    val remoteLoginUiState = viewModel.remoteLoginUiState
 
-    // 预插入默认账号：admin / admin123
-    LaunchedEffect(Unit) {
-        withContext(Dispatchers.IO) {
-            val existingUser = dao.login("admin", "admin123")
-            if (existingUser == null) {
-                dao.insertAll(Usuario(id = 1, nombre = "admin", password = "admin123"))
+    var numTrabajador by remember { mutableStateOf("") }
+    var nombre by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var loginError by remember { mutableStateOf("") }
+
+    // Observa el resultado del login
+    LaunchedEffect(remoteLoginUiState) {
+        when (remoteLoginUiState) {
+            is RemoteLoginUiState.Success -> {
+                loginError = ""
+            }
+            is RemoteLoginUiState.Error -> {
+                loginError = "Credenciales inválidas. Por favor, inténtalo de nuevo."
+            }
+            RemoteLoginUiState.Cargant -> {
+                loginError = ""
             }
         }
     }
-
-    var userId by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var passwordVisible by remember { mutableStateOf(false) }
-    var error by remember { mutableStateOf<String?>(null) }
-    val scope = rememberCoroutineScope()
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -56,40 +54,37 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
         ) {
             Text("HealHub", fontSize = 32.sp, color = Color(0xFF4CB8B3))
             Spacer(modifier = Modifier.height(40.dp))
+
             OutlinedTextField(
-                value = userId,
-                onValueChange = { userId = it },
-                label = { Text("Enter your ID") },
+                value = numTrabajador,
+                onValueChange = { numTrabajador = it },
+                label = { Text("Nombre") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(modifier = Modifier.height(16.dp))
+
             OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Password") },
+                value = nombre,
+                onValueChange = { nombre = it },
+                label = { Text("ID de trabajador") },
                 singleLine = true,
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
-                    val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                    val icon = if (passwordVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
-                        Icon(icon, contentDescription = "Toggle password visibility")
+                        Icon(icon, contentDescription = "Mostrar/Ocultar ID")
                     }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
+
             Spacer(modifier = Modifier.height(20.dp))
+
             Button(
                 onClick = {
-                    scope.launch(Dispatchers.IO) {
-                        val user = dao.login(userId, password)
-                        if (user != null) {
-                            error = null
-                            onLoginSuccess()
-                        } else {
-                            error = "Invalid credentials"
-                        }
-                    }
+                    viewModel.postRemoteLogin(numTrabajador, nombre)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
@@ -97,13 +92,13 @@ fun LoginScreen(onLoginSuccess: () -> Unit) {
                     contentColor = Color.White
                 )
             ) {
-                Text("Login")
+                Text("Iniciar sesión")
             }
-            error?.let {
+
+            if (loginError.isNotBlank()) {
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(it, color = Color.Red, fontSize = 14.sp)
+                Text(loginError, color = Color.Red, fontSize = 14.sp)
             }
         }
     }
 }
-
