@@ -11,8 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.healhub.database.AppDatabase
-import com.example.healhub.database.PatientData
+import com.example.healhub.AppViewModel
+import com.example.healhub.ui.remote.RemoteFindRoomById
 import kotlinx.coroutines.*
 import java.util.*
 import com.example.healhub.ui.theme.GreenButton
@@ -21,11 +21,12 @@ import com.example.healhub.ui.theme.GreenOutlinedButton
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PersonalDataScreen(
+    viewModel: AppViewModel,
     roomId: Int,
     onBack: () -> Unit
 ) {
+    val remoteFindRoomById = viewModel.remoteFindRoomById
     val context = LocalContext.current
-    val dao = AppDatabase.getInstance(context).patientDataDao()
 
     var fullName by remember { mutableStateOf("") }
     var birthDate by remember { mutableStateOf("") }
@@ -52,14 +53,7 @@ fun PersonalDataScreen(
 
     // Load existing data
     LaunchedEffect(roomId) {
-        withContext(Dispatchers.IO) {
-            dao.getByRoomId(roomId)?.let {
-                fullName = it.fullName
-                birthDate = it.birthDate
-                address = it.address
-                language = it.language
-            }
-        }
+        viewModel.getByRoomID(roomId)
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -79,8 +73,15 @@ fun PersonalDataScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            if (!isEditing) {
-                // 🔒 Read-only view
+            if (remoteFindRoomById is RemoteFindRoomById.Success && !isEditing) {
+                val room = (remoteFindRoomById as RemoteFindRoomById.Success).room
+                val patient = room.paciente
+
+                fullName = "${patient.nombre} ${patient.apellidos}"
+                birthDate = patient.fechaNacimiento
+                address = patient.direccionCompleta
+                language = patient.lenguaMaterna
+
                 Text("Full Name: $fullName")
                 Text("Date of Birth: $birthDate")
                 Text("Address: $address")
@@ -93,7 +94,8 @@ fun PersonalDataScreen(
                     onClick = { isEditing = true },
                     modifier = Modifier.fillMaxWidth()
                 )
-            } else {
+            }
+            else {
                 // ✍️ Editable form
                 OutlinedTextField(
                     value = fullName,
@@ -150,15 +152,15 @@ fun PersonalDataScreen(
                     text = "Save",
                     onClick = {
                         CoroutineScope(Dispatchers.IO).launch {
-                            dao.insert(
-                                PatientData(
-                                    roomId = roomId,
-                                    fullName = fullName,
-                                    birthDate = birthDate,
-                                    address = address,
-                                    language = language
-                                )
-                            )
+//                            dao.insert(
+//                                PatientData(
+//                                    roomId = roomId,
+//                                    fullName = fullName,
+//                                    birthDate = birthDate,
+//                                    address = address,
+//                                    language = language
+//                                )
+//                            )
                             withContext(Dispatchers.Main) {
                                 isEditing = false
                             }

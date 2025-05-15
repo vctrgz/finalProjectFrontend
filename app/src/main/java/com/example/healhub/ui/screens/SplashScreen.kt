@@ -1,4 +1,4 @@
-package com.example.healhub
+package com.example.healhub.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
@@ -11,13 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.healhub.AppViewModel
+import com.example.healhub.R
 import kotlinx.coroutines.delay
 
 @Composable
-fun SplashScreen(onFinished: () -> Unit) {
-    LaunchedEffect(true) {
-        delay(2000)
-        onFinished()
+fun SplashScreen(viewModel: AppViewModel) {
+    LaunchedEffect(Unit) {
+        delay(2000L) // Espera 2 segundos
+        viewModel.navigateTo("login")  // Navega automáticamente
     }
 
     Column(
