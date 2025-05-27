@@ -2,6 +2,7 @@ package com.example.healhub.ui.dataClasses
 
 data class Patient(
     val numHistorial: Int,
+    val diagnostico: Diagnosis,
     val nombre: String,
     val apellidos: String,
     val fechaNacimiento: String,
@@ -12,5 +13,6 @@ data class Patient(
     val nombreCuidador: String,
     val telefonoCuidador: String,
     val fechaIngreso: String,
-    val timestamp: String
+    val timestamp: String,
+    val registros: List<Care>
 )

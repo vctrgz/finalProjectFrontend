@@ -82,10 +82,20 @@ fun PersonalDataScreen(
                 address = patient.direccionCompleta
                 language = patient.lenguaMaterna
 
-                Text("Full Name: $fullName")
-                Text("Date of Birth: $birthDate")
-                Text("Address: $address")
-                Text("Language: $language")
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFEEEEEE)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 12.dp)) {
+                        Text("Full Name: $fullName")
+                        Text("Date of Birth: $birthDate")
+                        Text("Address: $address")
+                        Text("Language: $language")
+                    }
+                }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
